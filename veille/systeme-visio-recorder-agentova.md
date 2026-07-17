@@ -96,6 +96,22 @@ Utilisateur Agentova                    core-api                      Recall.ai 
 
 ---
 
+## 5-bis. Recherche « coût minimum » (17/07/2026 — 23 sources primaires, prix vérifiés en direct, votes adversariaux 3 juges)
+
+**Verdict : aucune architecture vérifiée ne bat Recall 0,50 $/h en restant 100 % fonctionnelle aujourd'hui.**
+
+| Rang | Architecture | 100 h/mois | 500 h | 1000 h | Ce qui manque |
+|---|---|---|---|---|---|
+| 1 | **Attendee self-host GCP** (~0,09 $/h infra 4vCPU/4Gi + 0,04 $/h Groq) | 13 $ | 65 $ | 130 $ | + ops (150-300 $/mois) + diarisation + fiabilité de join NON prouvée. Licence Elastic 2.0 (self-host pour son propre SaaS = permis) |
+| 2 | **Skribby + Groq** (0,35+0,05 vidéo + 0,04 STT = 0,44 $/h) | 44 $ | 220 $ | 440 $ | Diarisation absente de Groq (API-wide, vérifié) ; vendor early-stage sans certif, join non mesuré |
+| 3 | **Recall + captions** (baseline) | 50 $ | 250 $ | 500 $ | ✅ Rien — seul stack 100 % fonctionnel à fiabilité PROUVÉE (notre 2/2 en 6-7 s) |
+| 4 | MeetingBaaS (tokens : 1,25/h avec Gladia = 0,44-0,63 $/h + frais concurrence 199 $/mois dès ~6 bots simultanés) | 62 $ | 480 $ | 700 $ | Jamais sous le baseline tout compris. Le « 0,69 $/h flat » du marché est OBSOLÈTE (remplacé fin 2025). Diarisation incluse = réfuté |
+| — | Vexa (cloud ET self-host) | — | — | — | ❌ **DISQUALIFIÉ critère fiabilité** : issues GitHub primaires — classe de panne join/callback « never diagnosed » (la nôtre du 16/07), bug de join #556 encore ouvert, Helm cassé sur tout déploiement stock jusqu'au 15/07 |
+
+**Chiffres clés vérifiés** : Groq whisper-large-v3-turbo = **0,04 $/h** (12,5× moins cher que le baseline… mais zéro diarisation dans toute l'API) ; specs réelles d'un bot Attendee = 4 vCPU / 4 Gi par pod (exhumées du code `bot_pod_creator.py`) ; **point de bascule self-host ≈ 400-800 h/mois** (l'économie de 0,37 $/h doit d'abord absorber l'ops).
+
+**Recommandation coût** : Recall reste « le moins cher qui marche » → à ~500 h/mois, lancer le **pilote Attendee self-host** (test de join type 16/07 + solution diarisation) ; Skribby+Groq = pilote optionnel pour gagner ~12 % avant ça. Questions restées ouvertes : `spaces.artifactConfig` Google (aucun claim survivant), remises volume Recall, diarisation low-cost (pyannote ou flux par participant).
+
 ## 5. Coûts à l'échelle (catalogue, juillet 2026)
 
 | Volume mensuel | Recall.ai (bot) | Gladia (STT) | Total |

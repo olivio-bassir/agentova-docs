@@ -17,3 +17,4 @@ Dépôt privé de partage de documents de travail entre Olivio et le CTO : veill
 
 - [`veille/systeme-visio-recorder-agentova.md`](veille/systeme-visio-recorder-agentova.md) — **Système d'enregistrement/transcription de visios** : architecture recommandée (Recall.ai + Gladia), plan B (Vexa), coûts, risques, plan POC→MVP. *Document de cadrage prêt pour lancer le design.*
 - [`veille/veille-recorders-visio-2026-07-15.md`](veille/veille-recorders-visio-2026-07-15.md) — La veille détaillée qui fonde la recommandation (23 sources, prix vérifiés le 15/07/2026, comparatifs par famille).
+- [`veille/attendee-self-host-vs-heberge.md`](veille/attendee-self-host-vs-heberge.md) — **Attendee : pourquoi le self-host coûte 4× moins cher** — décomposition du prix, point de bascule (~400-800 h/mois), conditions avant de basculer, plan de pilote à 0 €.

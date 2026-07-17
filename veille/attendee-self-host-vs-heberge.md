@@ -31,12 +31,22 @@ Ce qu'on supprime de la facture, quelqu'un doit le faire — nous :
 
 > Analogie : louer une voiture avec chauffeur et garage inclus (0,50) vs acheter la même voiture (0,13) et faire l'entretien soi-même. Rentable seulement si on roule beaucoup.
 
-## Les 3 conditions avant de basculer (issues de la recherche du 17/07)
+## ✅ PILOTE RÉALISÉ le 17/07/2026 — résultats terrain (cloud Attendee, 5 h gratuites)
 
-1. **Fiabilité de join à prouver** — LE critère éliminatoire (notre test terrain du 16/07 : Recall 2/2 joins en 6-7 s ; Vexa cloud 1/4, disqualifié — pannes confirmées par leurs propres issues GitHub). Celle d'Attendee n'est mesurée nulle part.
-   → **Pilote à 0 €** : les 5 h gratuites du cloud Attendee font tourner le MÊME code de bot que le self-host — tester le join sur l'hébergé = valider la voie self-host sans monter d'infra. (Script prêt : `poc-recorder/poc-attendee.js`.)
-2. **Diarisation à trancher** — la voie STT low-cost (Groq) n'a aucune diarisation (vérifié API-wide) ; il faut soit les flux/événements par participant du bot, soit pyannote/WhisperX self-host, soit un STT avec diarisation incluse (Gladia 0,20-0,25 $/h).
-3. **Stack GCP à adapter** — Attendee attend un stockage S3 (adaptation GCS/S3-compat) ; modèle « un pod k8s par bot » → GKE plutôt que Cloud Run.
+| Critère | Test 1 (STT défaut) | Test 2 (Gladia BYOK + FR forcé) |
+|---|---|---|
+| **Join** | ✅ réussi (créé 1,5 s, en approche +6 s) | ✅ réussi (créé 4,7 s, en approche +9 s) → **2/2** (vs Vexa 1/4) |
+| Cycle complet + MP4 | ✅ (post-traitement 4 s) | ✅ (post-traitement 5 s) |
+| **Diarisation** | ✅ nominative (« Olivio Bassir ») — via la capture par participant du bot, indépendante du STT | ✅ idem |
+| **Français** | ❌ auto-détection → charabia anglais | ✅ **français correct** avec `gladia: {enable_code_switching: true, code_switching_languages: ["fr"]}` (schéma exact dans `bots/serializers.py` — leur doc ne le donne pas) |
+
+**Conclusions du pilote** : le code de bot Attendee (le même qu'en self-host) **join fiablement** là où Vexa échouait ; la diarisation nominative règle le trou de la voie Groq ; le FR exige la config explicite (BYOK provider dans Settings → Credentials + `transcription_settings`). Réserve restante : la **densité de capture sur de longues prises de parole** reste à valider sur une vraie réunion d'équipe (nos 2 échantillons étaient courts).
+
+## Les 3 conditions avant de basculer — mise à jour post-pilote
+
+1. ~~Fiabilité de join à prouver~~ → **✅ prouvée 2/2 le 17/07** (à confirmer sur un échantillon plus large avant la prod, mais le signal éliminatoire est levé).
+2. ~~Diarisation à trancher~~ → **✅ réglée** : Attendee attribue nominativement par participant, quel que soit le STT — la voie Groq à 0,04 $/h redevient donc jouable en self-host.
+3. **Stack GCP à adapter** (inchangé) — stockage S3 (adaptation GCS/S3-compat) ; modèle « un pod k8s par bot » → GKE plutôt que Cloud Run.
 
 ## Décision recommandée
 

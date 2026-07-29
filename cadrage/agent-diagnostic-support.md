@@ -1,6 +1,13 @@
 # Agent support qui DIAGNOSTIQUE (pas qui énumère) — cadrage
 
-**Date** : 2026-07-29 · **Porteur** : Olivio · **Statut** : validé sur le principe, en attente d'arbitrage équipe sur les prérequis (§8)
+**Date** : 2026-07-29 · **Porteur** : Olivio · **Statut** : **V1 IMPLÉMENTÉE ET VALIDÉE E2E EN LOCAL (2026-07-30)** — branche api-agent `feat/support-diagnostic-v1` ; reste les prérequis équipe (§8)
+
+## 0. V1 livrée — faits validés
+
+- **Outil `diagnose_workspace`** (agrégateur 3 sources, dégradation gracieuse par source, workspace verrouillé en closure serveur) + protocole anti-listes + règles de langage + `page_context` + trace d'audit des outils. 5 fichiers, +331 lignes.
+- **Org Sentry = `agentovaai` ; le tag recherchable est `workspace_id`** (snake_case — PAS `workspaceId`, qui ne rend rien). Vérifié sur les issues réelles : le tag est posé par le client, core-api ET agent-api.
+- Logs GCP : les deux conventions `jsonPayload.workspaceId` (Node) et `jsonPayload.workspace_id` (Python) sont couvertes par le filtre.
+- **Preuve E2E** (workspace local sans Instagram connecté, question « mes publications instagram ne partent plus ») : *« En regardant ton espace, je vois que ton compte Instagram n'apparaît pas du tout parmi tes connexions actives — c'est pour ça que tes publications ne partent plus. 1. Va dans les paramètres d'intégrations… »* — constat vérifié, 3 temps, zéro jargon.
 
 ## 1. Le problème
 

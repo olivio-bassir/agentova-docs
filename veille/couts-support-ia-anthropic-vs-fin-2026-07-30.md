@@ -61,7 +61,39 @@ Les articles d'aide ne sont **pas** injectés dans le contexte : l'agent les lit
 
 ---
 
-## 3. Méthode de calcul
+## 3. Pourquoi deux tables en base
+
+Le centre d'aide ajoute deux modèles au schéma Prisma. Les deux existent pour la même raison, et ce n'est pas du confort : **le backend tourne sur plusieurs instances Cloud Run**. Rien de ce qui doit survivre à un changement d'instance ne peut vivre en mémoire.
+
+### `support_chat_sessions` — l'historique des conversations
+
+Deux messages d'une même conversation n'atterrissent pas forcément sur la même instance. Un historique en mémoire serait perdu dès le deuxième message, ou dépendrait de l'instance touchée par la requête — l'agent répondrait alors sans contexte, ou avec le contexte de quelqu'un d'autre selon le routage.
+
+- Historique stocké au format Anthropic Messages (`[{role, content:[blocs]}]`).
+- Rétention 30 jours via `expires_at`, repoussée à chaque message, purge par job planifié.
+- Isolation par `workspace_id`, suppression en cascade avec le workspace.
+
+### `support_chat_rate_limits` — le compteur d'usage
+
+30 messages par heure et par utilisateur. Même contrainte : un compteur local donnerait *N* fois la limite avec *N* instances, c'est-à-dire aucune limite réelle.
+
+- Une ligne par utilisateur, réutilisée à chaque fenêtre : la table reste de la taille du nombre d'utilisateurs ayant déjà écrit au support.
+- `window_start` n'est jamais rafraîchi par les appels suivants, pour qu'un usage régulier ne s'accumule pas jusqu'au blocage.
+
+**Cette seconde table est directement le sujet de ce document** : c'est le garde-fou de coût. Sans elle, un compte qui boucle génère des milliers d'appels facturés par jour, sans que rien ne l'arrête. Sa limite actuelle est cependant insuffisante — elle borne le débit, pas la facture mensuelle (voir §5 et le levier 2 du §6).
+
+### Alternatives écartées
+
+| Option | Pourquoi non |
+|---|---|
+| Historique en mémoire | Perdu au changement d'instance ; le multi-instance est déjà en production |
+| Historique dans Redis | Ajoute une dépendance d'infrastructure pour une donnée qu'on veut de toute façon pouvoir auditer et purger avec rétention |
+| Compteur en mémoire | Donne *N* fois la limite avec *N* instances — pas une limite |
+| Historique côté client | Non fiable pour un quota (contournable) et perdu au changement d'appareil |
+
+---
+
+## 4. Méthode de calcul
 
 **Hypothèse de travail** : ~0,02 $ par message utilisateur en Sonnet 5 (tarif promo), décomposé ainsi :
 
@@ -74,7 +106,7 @@ Les articles d'aide ne sont **pas** injectés dans le contexte : l'agent les lit
 
 ---
 
-## 4. Scénarios chiffrés
+## 5. Scénarios chiffrés
 
 ### Usage normal — 100 workspaces, ~20 questions/mois chacun (~500 conversations)
 
@@ -106,7 +138,7 @@ Le quota actuel (30 messages/heure) borne le **débit**, pas la **facture** : il
 
 ---
 
-## 5. Trois leviers, sans perte de qualité
+## 6. Trois leviers, sans perte de qualité
 
 ### Levier 1 — Routage par difficulté *(gain : −60 %)*
 
@@ -149,7 +181,7 @@ Tronquer les résultats (N premières lignes, article résumé) coûte moins che
 
 ---
 
-## 6. Ce que nous ne recommandons pas
+## 7. Ce que nous ne recommandons pas
 
 - **Remplacer l'agent par Fin.** Plus cher en usage normal, et surtout : Fin répond à partir d'articles, il ne lit pas la base du workspace. « Pourquoi ma campagne n'est pas partie », « où en est mon import » sont hors de sa portée. Ce ne sont pas deux prix pour le même service.
 - **Réduire `MAX_TURNS` brutalement.** Cela coupe les diagnostics en cours de route : on dégrade la résolution pour économiser des centimes.
@@ -157,7 +189,7 @@ Tronquer les résultats (N premières lignes, article résumé) coûte moins che
 
 ---
 
-## 7. Recommandation
+## 8. Recommandation
 
 1. **Mesurer une semaine** via Langfuse (déjà branché) : part documentaire vs diagnostic, tokens réels par message.
 2. **Routage Haiku/Sonnet** — 1 jour, −60 %, aucun risque produit.

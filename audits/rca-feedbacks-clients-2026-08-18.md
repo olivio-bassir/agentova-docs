@@ -6,6 +6,13 @@
 
 **Voir aussi** : [triage-erreurs-prod-2026-08-17-18.md](./triage-erreurs-prod-2026-08-17-18.md) — le triage des erreurs Sentry de la même fenêtre (32 issues, dont le bug systémique `defineSecret` cité en M1).
 
+> **🔄 Mise à jour 2026-08-20** (balayage complet — rien n'est supprimé, on marque les statuts) :
+> - **Famille O (vidéo onboarding Wistia) : ✅ RÉSOLUE par l'équipe** — [PR #1412](https://github.com/Agentova-ai-Company/saas-agentova-ai/pull/1412) (Ericka, 20/08) repointe la dernière vidéo Wistia valide sur l'étape 3 VSL ; en prod depuis le train #1414 (20/08 18:43Z).
+> - **Pattern `defineSecret` (M1) : ✅ RÉSOLU côté crons** — PR #1381 en prod le 19/08 (superset + check CI `check-secrets-graph`) ; purge RGPD fonctionnelle la nuit du 20/08 (3 purges, 0 échec). Reste le tier Cloud Run : `INTERCOM_IDENTITY_SECRET` non monté sur core-api → [PR #1400](https://github.com/Agentova-ai-Company/saas-agentova-ai/pull/1400) en attente.
+> - **Famille A (historique chatbot vide, `agent_channel` sans backfill) : ❌ toujours ouverte** — et un feedback du 19/08 (« liste automatisation vide », Resolu-renovation-33) présente la même signature « données présentes / UI muette ».
+> - **Blackout Sentry (M1) : clos depuis le 17/08**, ingestion active vérifiée en continu les 19-20/08.
+> - Nouveaux feedbacks 18-20/08 (billing offre de bienvenue/CLAIM_MISSED, chatbot muet BISIAU, brouillons IMAP o2switch, téléphonie RDV custom + pricing) : consignés dans la mise à jour du triage, hors périmètre des 91 d'origine.
+
 ---
 
 ## 1. Les trois maladies systémiques (la « maladie », pas les symptômes)
